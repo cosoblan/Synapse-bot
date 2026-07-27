@@ -4,13 +4,12 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiohttp import web
 
-# Токен твоего бота (получишь у @BotFather)
-TOKEN = os.getenv("BOT_TOKEN", " твой_токен_сюда ")
+TOKEN = os.getenv("AAHDt4wK-Q9dQ7cqyRvlrUPDhpUxeYL4lIA
+")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# HTML-код нашего терминала, который откроется внутри Telegram
 HTML_CONTENT = """
 <!DOCTYPE html>
 <html lang="ru">
@@ -178,7 +177,7 @@ HTML_CONTENT = """
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран в телеге
+        tg.expand();
 
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             document.getElementById('tgUser').innerText = 'ID: ' + tg.initDataUnsafe.user.id;
@@ -229,18 +228,16 @@ HTML_CONTENT = """
 </html>
 """
 
-# Обработчик веб-сервера: отдает HTML при запросе
 async def handle_index(request):
     return web.Response(text=HTML_CONTENT, content_type='text/html')
 
-# Хендлер бота на команду /start
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    webapp_url = os.getenv("WEBAPP_URL", "https://your-domain.onrender.com")
     builder = InlineKeyboardBuilder()
-    # Кнопка открытия Mini App (замени URL на свой рабочий адрес сервера после деплоя)
     builder.button(
         text="⚡ Открыть SYNAPSE Terminal", 
-        web_app=types.WebAppInfo(url="https://твой-домен.railway.app") 
+        web_app=types.WebAppInfo(url=webapp_url)
     )
     
     await message.answer(
@@ -250,16 +247,16 @@ async def cmd_start(message: types.Message):
     )
 
 async def main():
-    # Запускаем локальный веб-сервер для отдачи Mini App
     app = web.Application()
     app.router.add_get('/', handle_index)
     
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
     
-    print("WebServer started on port 8080...")
+    print(f"Server started on port {port}...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
